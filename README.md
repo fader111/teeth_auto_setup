@@ -21,16 +21,16 @@
 
   <!-- <img alt="Github forks" src="https://img.shields.io/github/forks/{{YOUR_GITHUB_USERNAME}}/jaw_encoder?color=56BEB8" /> -->
 
-  <!-- <img alt="Github stars" src="https://img.shields.io/github/stars/{{YOUR_GITHUB_USERNAME}}/jaw_encoder?color=56BEB8" /> -->
+  <img alt="Github stars" src="https://img.shields.io/github/stars/{{YOUR_GITHUB_USERNAME}}/jaw_encoder?color=56BEB8" />
 </p>
 
 <!-- Status -->
 
-<!-- <h4 align="center"> 
-	🚧  Jaw_encoder 🚀 Under construction...  🚧
+<h4 align="center"> 
+	<img src = https://github.com/fader111/teeth_auto_setup/blob/fe75481ec2f2fddc5c6ec6c472a6e0367d08c19d/png/predictions_nb.png/>
 </h4> 
 
-<hr> -->
+<hr>
 
 <p align="center">
   <a href="#dart-about">About</a> &#xa0; | &#xa0; 
