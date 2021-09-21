@@ -1,64 +1,59 @@
 import cv2
 import numpy as np
 
-red = (0, 0, 255)
-white = (255, 255, 255)
+import matplotlib as mpl
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 
 # класс который генерит картинки размерностью с искривлениями зубов или без.
 # основное отличие - генерятся не картинки с зубами, а данные в виде 
 # [[метка][координаты точки начала, длина вектора]]
-# 
+# вектора в этой версии 3-х мерные, поэтому без opencv в этот раз
 
-# print(f" cv2 ver. {cv2.__version__}, np ver. {np.__version__}")
 np.random.seed() # устанавливает режим случайных чисел без повторений от запуска к запуску
 
 class Landmark_gen():
-    ''' creates pictures with incistor edges landmarks '''
+    ''' creates pictures with MDW and others landmarks '''
 
-    def __init__(self, number=100, dim=(200, 200)):
-        # self.number = number # нафиг нигде не сперлось? Удалять?
+    def __init__(self, dim=(200, 200, 200)):
         self.dim = dim
 
     def image_gen(  self, 
                     name='_', 
-                    scale1=1, 
+                    scale=1, 
                     factor=2.6, 
-                    shift_x=0, 
-                    shift_y=0, 
                     spoiled = False,    # вводит хаотичный наклон и смещение зубов имитируя T1
                     shiftX = False,     # add random shift for whole tooth for X axis
                     shiftY = False,     # add random shift for whole tooth for Y axis
-                    show=False):
+                ):
         # 
         # все делаем под разрешение 200x200 
+        self.name= name
         self.back = np.zeros(self.dim)            # картинка с ровными зубами
         self.back_spoiled = np.zeros(self.dim)     # картинка с корявыми зубами
         self.factor = factor
         self.out_vector = []                        # вектор лендмарков [x,y,len_x, len_y]
         self.out_vector_spoiled = []                # то же, но искривленные зубы
-        center = (self.dim[0]//2, self.dim[1]//2)
-        # оси координат по центру
-        if 1:
-            cv2.line(self.back, (0, center[1]), (self.dim[0], center[1]), 0.4, 1)
-            cv2.line(self.back, (center[0], 0), (center[0], self.dim[1]), 0.4, 1)
-            cv2.line(self.back_spoiled, (0, center[1]), (self.dim[0], center[1]), 0.4, 1)
-            cv2.line(self.back_spoiled, (center[0], 0), (center[0], self.dim[1]), 0.4, 1)
-
+        center = (self.dim[0]//2, self.dim[1]//2, self.dim[2]//2) # центральная точка на графике
+        
         # строим дугу. так чтобы на основе ее точек можно было зубья подровнять
+        # сначала на плоскости, потом по мере добавим изменения координат по оси z
         for i in range(-8, 8):
             # строим точки графика
             # первая точка зуба
-            point_ = [int(i*scale1)+center[0], int(self.duga(i)) + center[1]]
+            z_lev = center[2]         # уровень на котором будет плоскость "окклюзии" в координате z
+            point_ = [int(i*scale)+center[0], int(self.duga(i)) + center[1], z_lev] 
             # вторая
-            point2_ = [int((i+1-0.2)*scale1 +
-                          center[0]), int(self.duga(i+1-0.2)) + center[1]]
+            point2_ = [int((i+1-0.2)*scale +
+                          center[0]), int(self.duga(i+1-0.2)) + center[1], z_lev]
             
             # строим линии по дуге - ровные зубы
-            cv2.line(self.back, point_, point2_, 1, 2)
+            # cv2.line(self.back, point_, point2_, 1, 2)
             # добавляем координаты точек в выдачу
             len_x = point2_[0] - point_[0]
             len_y = point2_[1] - point_[1]
-            self.out_vector.append([point_[0], point_[1], len_x, len_y])
+            len_z = 0
+            self.out_vector.append([point_[0], point_[1], point_[2], len_x, len_y, len_z])
 
             # шатаем зубы если задано шатать и выдаем на картинку back_spoiled
             if spoiled: 
@@ -82,23 +77,18 @@ class Landmark_gen():
                 point2_[1] += case_shift_y_
             
             # для второй картинки сторим покореженные зубы. или те-же если корежить не надо
-            cv2.line(self.back_spoiled, point_, point2_, 1, 2)
+            # cv2.line(self.back_spoiled, point_, point2_, 1, 2)
             len_x = point2_[0] - point_[0]
             len_y = point2_[1] - point_[1]
             # добавляем координаты точек в выдачу
-            self.out_vector_spoiled.append([point_[0], point_[1], len_x, len_y])
+            self.out_vector_spoiled.append([point_[0], point_[1], point_[2], len_x, len_y, len_z])
             
             # cv2.circle(self.back, point_, 1, 0.2, 1)
         # print (f"self.back shape {self.back.shape}")
+        # выключил тут рисование - рисовать будет другими средствами
 
-        if show: # shows picture. beware using in batсh processing
-            self.back = cv2.resize(self.back, self.dim)  # увеличиваем только для показа
-            self.back_spoiled = cv2.resize(self.back_spoiled, self.dim)  # увеличиваем только для показа
-            img_for_show = np.hstack((self.back, self.back_spoiled))
-            cv2.imshow(name, img_for_show)
-            k = cv2.waitKey()
+        return self.out_vector, self.out_vector_spoiled  
 
-        return self.back, self.back_spoiled, self.out_vector, self.out_vector_spoiled  
 
     def duga(self, x):
         ''' returns arc function'''
@@ -106,6 +96,7 @@ class Landmark_gen():
 
     # @staticmethod
     def draw_pic_fr_vec(self, vec):
+        # это осталось из версии 2D возможно придется удалить
         # get landmarks and Draw pictures
         # vec это вектор лендмарка длиной 16, vec[i] = [x,y, x_len, y_len]
         self.pred_pict = np.zeros(self.dim)   
@@ -115,13 +106,57 @@ class Landmark_gen():
                 (int(x+x_len), int(y+y_len)), 1, 2)
         
         return self.pred_pict
+    
+    def draw_3d(self, vec, show=False):
+        # !!! переделать чтобы рисовал любое количество субплотов. 
+        # draw 3d pictures in matplotlib
+        # vec = [vec_norm, vec_spoiled]
+        mpl.rcParams['legend.fontsize'] = 10
+        # plt.subplot(1,1,1)
+        fig = plt.figure(num=self.name, figsize=plt.figaspect(0.5))
+        ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+        ax2 = fig.add_subplot(1, 2, 2, projection='3d')
+        
+        ax1.set_xlim(0,     200)
+        ax2.set_xlim(0,     200)
+        ax1.set_ylim(0,     200)
+        ax2.set_ylim(0,     200)
+        ax1.set_zlim(96,    104)
+        ax2.set_zlim(96,    104)
+        
+        fig.suptitle('MDWidth')
+
+        # рисуем дугу из отрезков mdw - сначала не спойленые зубы
+        for i, t in enumerate(vec[0]): # 16 зубов * [x,z,z, len_x, len_y, len_z]
+            ax1.plot3D(
+                [t[0],t[0]+t[3]], 
+                [t[1],t[1]+t[4]], 
+                [t[2],t[2]+t[5]], 
+                label='норм', color = 'r')
+        
+        # теперь то же для кореженных зубов
+        for i, t in enumerate(vec[1]): # 16 зубов * [x,z,z, len_x, len_y, len_z]
+            ax2.plot(
+                [t[0],t[0]+t[3]], 
+                [t[1],t[1]+t[4]], 
+                [t[2],t[2]+t[5]], 
+                # label='корежен', color = '#505050')
+                label='корежен', color = 'g')
+        # fig.legend()
+        ax1.view_init(90, 90)
+        ax2.view_init(90, 90)
+        plt.show() if show == True else None
+
 
 if __name__ == "__main__":
-    ex = Landmark_gen(dim=(400, 400)) 
+    ex = Landmark_gen() 
     # генерируем разные картинки
-    for i in range(30):  
+    for i in range(1):  
         scale =  9 + np.random.sample()*3    # 9,3 это для размера 200, для размера 400 - диапазон от 14 до 19 
         factor = 2.2 + np.random.sample()/4   # 2.2, 4 - это для размера 200, для размера 400 - диапазон 2.5 - 2.7  
         name = f"scale {scale:.4}  factor {factor:.3}"
-        ex.image_gen(show=True, scale1=scale, factor=factor, name=name, spoiled=True, shiftX=True, shift_y=True)
-        # print(scale, factor)
+        vec = ex.image_gen(scale=scale, factor=factor, name=name, spoiled=True, shiftX=True, shiftY=True)
+        # print (f"vec shape{vec[0][0]}")
+        ex.draw_3d(vec, show=True)
+
+
