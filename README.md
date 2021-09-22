@@ -10,7 +10,7 @@
 
 <!-- Status -->
 <h4 align="center">
-Alignes the theeth automatically with CNN encoder
+Alignes the theeth automatically with auto encoder
 </h4>
 
 <!-- <h4 align="center"> 
@@ -19,4 +19,9 @@ Alignes the theeth automatically with CNN encoder
 
 <h4 align="center"> 
 	<img src = png/predictions_nb.png/>
+  <img src = png/Clipboard5kepochs.png/>
 </h4> 
+<h5>
+jaw_encoder_vector3D.ipynb - использует только лендмарки кромок на синтетических данных 
+<p>добавляем другие лендмарки
+</h5>

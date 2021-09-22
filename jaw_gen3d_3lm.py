@@ -1,3 +1,5 @@
+# новый генератор с 3-мя лендмарками 
+
 import cv2
 import numpy as np
 
@@ -13,7 +15,7 @@ import matplotlib.pyplot as plt
 np.random.seed() # устанавливает режим случайных чисел без повторений от запуска к запуску
 
 class Landmark_gen():
-    ''' creates pictures with MDW and others landmarks '''
+    ''' creates pictures with MDW, BCP, FAP landmarks '''
 
     def __init__(self, dim=(200, 200, 200)):
         self.dim = dim
@@ -22,9 +24,10 @@ class Landmark_gen():
                     name='_', 
                     scale=1, 
                     factor=2.6, 
-                    spoiled = False,    # вводит хаотичный наклон и смещение зубов имитируя T1
-                    shiftX = False,     # add random shift for whole tooth for X axis
-                    shiftY = False,     # add random shift for whole tooth for Y axis
+                    spoiledMDW = False,    # вводит хаотичный наклон и смещение зубов имитируя T1 для лендмарка MDW
+                    shiftXMDW = False,     # add random shift for whole tooth for X axis для лендмарка MDW
+                    shiftYMDW = False,     # add random shift for whole tooth for Y axis для лендмарка MDW
+
                 ):
         # возвращает 2 вектора - ровных и кореженных зубов 
         # все делаем под разрешение 200x200 
@@ -36,56 +39,68 @@ class Landmark_gen():
         self.out_vector_spoiled = []                # то же, но искривленные зубы
         center = (self.dim[0]//2, self.dim[1]//2, self.dim[2]//2) # центральная точка на графике
         
+        # Генерим Medial Distal Width Line лендмарк
         # строим дугу. так чтобы на основе ее точек можно было зубья подровнять
         # сначала на плоскости, потом по мере добавим изменения координат по оси z
-        for i in range(-8, 8):
-            # строим точки графика
-            # первая точка зуба
+        for i in range(-8, 8): # от зуба к зубу
+            
+            #### Формируем лендмарк Medial Distal Width line MDW #### 
+            
+            # в вектор добавляются 3 значения - координаты начальной точки x,y,z,
+            # + 3 значения проекций отрезка на оси, всего 6 значений
+            # остальные лендмарки просто будут добавляться в хвост.
+            
+            # строим точки графика 
             z_lev = center[2]         # уровень на котором будет плоскость "окклюзии" в координате z
-            point_ = [int(i*scale)+center[0], int(self.duga(i)) + center[1], z_lev] 
+            # первая точка зуба
+            point_mdw = [int(i*scale)+center[0], int(self.duga(i)) + center[1], z_lev] 
             # вторая
-            point2_ = [int((i+1-0.2)*scale +
+            point2_mdw = [int((i+1-0.2)*scale +
                           center[0]), int(self.duga(i+1-0.2)) + center[1], z_lev]
             
             # строим линии по дуге - ровные зубы
-            # cv2.line(self.back, point_, point2_, 1, 2)
+            # cv2.line(self.back, point_mdw, point2_mdw, 1, 2)
             # добавляем координаты точек в выдачу
-            len_x = point2_[0] - point_[0]
-            len_y = point2_[1] - point_[1]
+            len_x = point2_mdw[0] - point_mdw[0]
+            len_y = point2_mdw[1] - point_mdw[1]
             len_z = 0
-            self.out_vector.append([point_[0], point_[1], point_[2], len_x, len_y, len_z])
+            # это теперь будем добавлять в самом конце
+            # self.out_vector.append([point_mdw[0], point_mdw[1], point_mdw[2], len_x, len_y, len_z])
 
             # шатаем зубы если задано шатать и выдаем на картинку back_spoiled
-            if spoiled: 
+            if spoiledMDW: 
                 if i in [-8, -7, -6, 5, 6, 7 ]: # портим моляры 
-                    point_[0]+= int((np.random.sample()-1)*i)
+                    point_mdw[0]+= int((np.random.sample()-1)*i)
 
                 if i in [-5, -4, -3, -2, 1, 2, 3, 4]: # премоляры и резцы
-                    point_[1]+= int((np.random.sample()-1)*i*2)
+                    point_mdw[1]+= int((np.random.sample()-1)*i*2)
 
                 if i in [-1, 0]: # передние резцы
-                    point_[1]+= int((np.random.sample()-1)*4)
+                    point_mdw[1]+= int((np.random.sample()-1)*4)
             
-            if shiftX:
+            if shiftXMDW:
                 case_shift_x_ = int((np.random.sample()-1)*5)
-                point_[0] += case_shift_x_
-                point2_[0] += case_shift_x_
+                point_mdw[0] += case_shift_x_
+                point2_mdw[0] += case_shift_x_
             
-            if shiftY:
+            if shiftYMDW:
                 case_shift_y_ = int((np.random.sample()-1)*5)
-                point_[1] += case_shift_y_
-                point2_[1] += case_shift_y_
+                point_mdw[1] += case_shift_y_
+                point2_mdw[1] += case_shift_y_
             
-            # для второй картинки сторим покореженные зубы. или те-же если корежить не надо
-            # cv2.line(self.back_spoiled, point_, point2_, 1, 2)
-            len_x = point2_[0] - point_[0]
-            len_y = point2_[1] - point_[1]
+            # для второго вектора делаем покореженные значения. или те-же если корежить не надо
+            len_x = point2_mdw[0] - point_mdw[0]
+            len_y = point2_mdw[1] - point_mdw[1]
             # добавляем координаты точек в выдачу
-            self.out_vector_spoiled.append([point_[0], point_[1], point_[2], len_x, len_y, len_z])
-            
-            # cv2.circle(self.back, point_, 1, 0.2, 1)
-        # print (f"self.back shape {self.back.shape}")
-        # выключил тут рисование - рисовать будет другими средствами
+            self.out_vector_spoiled.append([point_mdw[0], point_mdw[1], point_mdw[2], len_x, len_y, len_z])
+        
+            #### Формируем лендмарк Buccal Cusp Points BCP ####
+
+            # в вектор добавляем 3 значения - координаты точки
+            # он повторяет точки  MDW с небольшим сдвигом вниз по z и вверх по х
+            point_bcp = [int(i*scale)+center[0] - 5, int(self.duga(i)) + center[1], z_lev-5] 
+            self.out_vector.append([point_bcp[0], point_bcp[1], point_bcp[2])
+
 
         return self.out_vector, self.out_vector_spoiled  
 
