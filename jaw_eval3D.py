@@ -25,6 +25,8 @@ dataset_spoiled =       []
 dataset_vec =           []
 dataset_vec_spoiled =   []
 
+n=30 # размер батча векторов для предикта
+
 for i in range(data_len):
     scale =  9 + np.random.sample()*3     # это для размера 200, диапазон от 14 до 19 для размера 400
     factor = 2.2 + np.random.sample()/4   # это для размера 200, диапазон 2.5 - 2.7 для размера 400 
@@ -51,8 +53,8 @@ models = [
             [   m_pth+'encoder1000ep_loss0.099676.h5',
                 m_pth+'decoder1000ep_loss0.099676.h5'], 
             
-            [   m_pth+'encoder1200ep_loss0.10628.h5',
-                m_pth+'decoder1200ep_loss0.10628.h5'], 
+            [   m_pth+'encoder5000ep_loss0.048801.h5',
+                m_pth+'decoder5000ep_loss0.048801.h5'], 
 
             [   m_pth+'encoder2800ep_loss0.052638.h5',       # полный провал 
                 m_pth+'decoder2800ep_loss0.052638.h5']
@@ -61,7 +63,6 @@ print (f"{3}")
 encoder = load_model(models[3][0])
 decoder = load_model(models[3][1])
 
-n=100 # размер батча векторов для предикта
 # предиктим 
 encoded_vecs = encoder.predict(dataset_vec_spoiled[:n],  batch_size=n)
 decoded_vecs = decoder.predict(encoded_vecs[:n], batch_size=n)
@@ -73,7 +74,7 @@ decoded_vecs =          np.reshape(decoded_vecs,            (-1, 16, 6))
 # print (f"decoded_vecs shape{decoded_vecs.shape}")
 # print (f"dataset_vec_spoiled[1]{dataset_vec_spoiled[1]}")
 # print (f"decoded_vecs[1]{decoded_vecs[1]}")
-for i in range(n):
-    inst_.draw_3d((dataset_vec_spoiled[i], decoded_vecs[i]), show = True)
+# for i in range(n):
+inst_.draw_3d(dataset_vec_spoiled[:3], decoded_vecs[:3], show = True)
 # inst_.draw_3d((dataset_vec_spoiled[1], dataset_vec_spoiled[1]), show = True)
 

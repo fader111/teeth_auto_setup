@@ -107,26 +107,36 @@ class Landmark_gen():
         
         return self.pred_pict
     
-    def draw_3d(self, vec, show=False):
+    def draw_3d(self, *args,  show=False):
         # !!! переделать чтобы рисовал любое количество субплотов. 
         # draw 3d pictures in matplotlib
         # vec = [vec_norm, vec_spoiled]
-        mpl.rcParams['legend.fontsize'] = 10
+        colors = ['b','g','r']
+        # mpl.rcParams['legend.fontsize'] = 10
         # plt.subplot(1,1,1)
-        fig = plt.figure(num=self.name, figsize=plt.figaspect(0.5))
-        ax1 = fig.add_subplot(1, 2, 1, projection='3d')
-        ax2 = fig.add_subplot(1, 2, 2, projection='3d')
-        
-        ax1.set_xlim(0,     200)
-        ax2.set_xlim(0,     200)
-        ax1.set_ylim(0,     200)
-        ax2.set_ylim(0,     200)
-        ax1.set_zlim(96,    104)
-        ax2.set_zlim(96,    104)
-        
-        fig.suptitle('MDWidth')
-
-        # рисуем дугу из отрезков mdw - сначала не спойленые зубы
+        n = min([x.shape[0] for x in args]) # сколько столбцов нарисуем
+        # fig = plt.figure(num=self.name, figsize=plt.figaspect(0.5))
+        plt.figure(figsize=(2*n, 2*len(args)))
+        for j in range(n):
+            for i in range(len(args)):
+                ax = plt.subplot(len(args), n, i*n + j + 1)
+                # q здесь оказывается одномерным массивом
+                # а в оригинале каждым аргументом из args является набор картинок. 
+                q= args[i][j] # промежуточная ня чтобы проверить что там челюсть а не труля-ля ля
+                for t in q: # 16 зубов * [x,z,z, len_x, len_y, len_z]
+                    ax.plot(
+                    [t[0],t[0]+t[3]], 
+                    [t[1],t[1]+t[4]], 
+                    [t[2],t[2]+t[5]], 
+                    label='норм', color = colors[i])
+                
+                ax.set_xlim(0,     200)
+                ax.set_ylim(0,     200)
+                ax.set_zlim(96,    104)
+                
+        # fig.suptitle('MDWidth')
+        # рисуем дугу из отрезков mdw 
+        '''
         for i, t in enumerate(vec[0]): # 16 зубов * [x,z,z, len_x, len_y, len_z]
             ax1.plot3D(
                 [t[0],t[0]+t[3]], 
@@ -143,8 +153,10 @@ class Landmark_gen():
                 # label='корежен', color = '#505050')
                 label='корежен', color = 'g')
         # fig.legend()
-        ax1.view_init(90, 90)
-        ax2.view_init(90, 90)
+        # вставить надписи для графиков
+        '''
+        # ax1.view_init(90, 90)
+        # ax2.view_init(90, 90)
         plt.show() if show == True else None
 
 
