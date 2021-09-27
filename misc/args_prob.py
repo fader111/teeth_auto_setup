@@ -15,3 +15,7 @@ def a(*args, shaw=True):
         print (f"args len {len(args)} args {args}")
 
 a(3,2)
+
+import numpy as np
+aa = np.array([[1,2], [1,2],[1,2],[1,2]])
+aa[:1][1]

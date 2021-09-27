@@ -111,9 +111,9 @@ class CsvParser:
                 ind = dw_teeth_nums.index(row[3])
                 lower_jaw_t0[ind] = row[4:10] + row[16:22] # получается микс списков и туплей, но роде для np это пох
                 lower_jaw_t1[ind] = row[10:16] + row[22:28] 
-            # print (f"{lower_jaw_t0} len{len(lower_jaw_t0)}")
+            print (f"{lower_jaw_t0} len{len(lower_jaw_t0)}")
             # print (f"\n\n")
-            # print (f"{lower_jaw_t1} len{len(lower_jaw_t1)}")
+            print (f"{lower_jaw_t1} len{len(lower_jaw_t1)}")
             # print (f"caseId{CaseId}") 
         return lower_jaw_t0, lower_jaw_t1
 
@@ -125,5 +125,5 @@ class CsvParser:
 
 # print (f"reader {next(reader)}")
 
-# a= CsvParser()
-# a.set_gen()
+a= CsvParser()
+a.set_gen()

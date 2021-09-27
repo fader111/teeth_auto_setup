@@ -150,7 +150,7 @@ class Landmark_gen():
         MDWcolors = ['b','r','g']
         BCPcolors = ['yellow', 'yellow', 'yellow']
         FAPcolors = ['k', 'k', 'k']
-        titls = ["Train", "T1", "Predicted T2"]
+        titls = ["T1", "Predicted T2"]
         # mpl.rcParams['legend.fontsize'] = 10
         # n = min([x.shape[0] for x in args]) # сколько столбцов нарисуем
         n = min([len(x) for x in args]) # сколько столбцов нарисуем
@@ -178,9 +178,9 @@ class Landmark_gen():
                     
                     
                 # ax.title.set_text('My')
-                ax.set_xlim(0,     200)
-                ax.set_ylim(0,     200)
-                ax.set_zlim(70,    130)
+                # ax.set_xlim(0,     200)
+                # ax.set_ylim(0,     200)
+                # ax.set_zlim(70,    130)
                 ax.view_init(90,   90)
 
         plt.show() if show == True else None
