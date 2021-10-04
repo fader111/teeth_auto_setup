@@ -1,4 +1,5 @@
 # новый генератор с 3-мя лендмарками 
+# UPD mdw point2 вместо длины mdw
 
 import cv2
 import numpy as np
@@ -84,10 +85,10 @@ class Landmark_gen():
             if shiftMDW:
                 case_shift_x_ = int((np.random.sample()-1)*5)
                 point_mdw_s[0] = point_mdw[0] +  case_shift_x_
-                # point2_mdw_s[0] = point2_mdw[0] +  case_shift_x_ # объединить сдвиг по x и y в один точку 2 убрать, ширину не менять, см.ниже            
+                point2_mdw_s[0] = point2_mdw[0] +  case_shift_x_ # объединить сдвиг по x и y в один точку 2 убрать, ширину не менять, см.ниже            
                 case_shift_y_ = int((np.random.sample()-1)*5)
                 point_mdw_s[1] = point_mdw[1] + case_shift_y_
-                # point2_mdw_s[1] = point2_mdw[1] + case_shift_y_
+                point2_mdw_s[1] = point2_mdw[1] + case_shift_y_
             
             point_mdw_s[2] = z_lev
             
@@ -114,15 +115,17 @@ class Landmark_gen():
     
             # теперь набиваем вектора созданными значениями
             self.out_vector.append(
-                                   [point_mdw[0],   point_mdw[1], point_mdw[2], len_x, len_y, len_z, 
-                                    point_bcp[0], point_bcp[1], point_bcp[2], 
-                                    point_fap[0], point_fap[1], point_fap[2]                
+                                   [point_mdw[0],   point_mdw[1],   point_mdw[2], #len_x, len_y, len_z, 
+                                    point2_mdw[0],  point2_mdw[1],  point2_mdw[2],
+                                    point_bcp[0],   point_bcp[1],   point_bcp[2], 
+                                    point_fap[0],   point_fap[1],   point_fap[2]                
                                 ])
 
             self.out_vector_spoiled.append(
-                                   [point_mdw_s[0],   point_mdw_s[1], point_mdw_s[2], len_x_s, len_y_s, len_z_s, 
-                                    point_bcp_s[0], point_bcp_s[1], point_bcp_s[2], 
-                                    point_fap_s[0], point_fap_s[1], point_fap_s[2]                
+                                   [point_mdw_s[0],     point_mdw_s[1],     point_mdw_s[2], #len_x_s, len_y_s, len_z_s, 
+                                    point2_mdw_s[0],    point2_mdw_s[1],    point2_mdw_s[2],
+                                    point_bcp_s[0],     point_bcp_s[1],     point_bcp_s[2], 
+                                    point_fap_s[0],     point_fap_s[1],     point_fap_s[2]                
                                 ])
         # print (f"vector {self.out_vector}")
         # print (f"vector_spoiled {self.out_vector_spoiled}")
@@ -151,6 +154,7 @@ class Landmark_gen():
         BCPcolors = ['yellow', 'yellow', 'yellow']
         FAPcolors = ['k', 'k', 'k']
         titls = ["T1", "Predicted T2"]
+        titls = [ "T1", "Predicted T2"]
         # mpl.rcParams['legend.fontsize'] = 10
         # n = min([x.shape[0] for x in args]) # сколько столбцов нарисуем
         n = min([len(x) for x in args]) # сколько столбцов нарисуем
@@ -161,26 +165,49 @@ class Landmark_gen():
             for i in range(len(args)):
                 ax = plt.subplot(len(args), n, i*n + j + 1, title = f'{titls[i]} {j}', projection='3d')
                 q= args[i][j] # промежуточная ня чтобы проверить что там челюсть а не труля-ля ля
-                for t in q: # 16 зубов * [x,z,z, len_x, len_y, len_z, bcp_x, bcp_y, bcp_z, fap_x, fap_y, fap_z]
-                    # рисоваем MDW
-                    ax.plot(
-                    [t[0],t[0]+t[3]], 
-                    [t[1],t[1]+t[4]], 
-                    [t[2],t[2]+t[5]], 
-                    # label='норм', title=f"{i,j}", color = colors[i])
-                    label='норм', color = MDWcolors[i])
+                q= np.array(q) # для универсальности, т.к. аргументы могут и не быть массивами np
 
-                    # а теперь точки bcp
-                    ax.scatter3D(t[6], t[7], t[8], color =BCPcolors[i])
+                for t in q: # 16 зубов * [x,z,z, len_x, len_y, len_z, bcp_x, bcp_y, bcp_z, fap_x, fap_y, fap_z]
+                    # рисоваем MDW но не рисуем нули от удаленных зубов.
+                    # Причем лучше оценивать 
+                    tr1 = 0.8 # thresh for mdw нужно сильно подбирать, т.к. много мусора.
+                    tr2 = 0.7 # thresh for bcp
+                    tr3 = 0.8 # thresh for fap
+                    # притаскиваем все что близко к нулю, точно к нулю. 
+                    # t[abs(t)<0.01] =0 
+                    # и если нет нулей то печатаем лендмарк. 
+                    if abs(t[0])<tr1 and abs(t[1])<tr1 and abs(t[2])<tr1 and abs(t[3])<tr1 and abs(t[4])<tr1 and abs(t[5])<tr1:
+                    # if not 0 in t: # это пока не очень хорошо работает, надо доделать.
+                        pass # не печатаем 
+                        # print (f"пропуск {t}")
+                    else:
+                        ax.plot(
+                        [t[0],t[3]], 
+                        [t[1],t[4]], 
+                        [t[2],t[5]], 
+                        # label='норм', title=f"{i,j}", color = colors[i])
+                        label='норм', color = MDWcolors[i])
+                    
+                    # t[abs(t)<0.05] =0  # еще разок для точечных лендмарков с более грубой притяжкой.
+                    # точки bcp
+                    if abs(t[6])<tr2 and abs(t[7])<tr2 and abs(t[8])<tr2:
+                        pass
+                        # print (f"ex BCP \n{t}")
+                    else:
+                        ax.scatter3D(t[6], t[7], t[8], color =BCPcolors[i])
 
                     # и также fap
-                    ax.scatter3D(t[9], t[10], t[11], color =FAPcolors[i])
-                    
+                    if abs(t[9])<tr3 and abs(t[10])<tr3 and abs(t[11])<tr3:
+                        pass # почему так, а потому что так короче писать. 
+                        # print (f"ex FAP \n{t}")
+                    else:
+                        ax.scatter3D(t[9], t[10], t[11], color =FAPcolors[i])
+                        
                     
                 # ax.title.set_text('My')
                 # ax.set_xlim(0,     200)
                 # ax.set_ylim(0,     200)
-                # ax.set_zlim(70,    130)
+                ax.set_zlim(-10,    10)
                 ax.view_init(90,   90)
 
         plt.show() if show == True else None

@@ -33,7 +33,33 @@ def set_gen_fr_csv(csv_path):
         # upper_jaw = [[] for i in range(16)]
         lower_jaw_t0 = [[0.00001 for j in range(12)] for i in range(16)] # раньше было 0 
         lower_jaw_t1 = [[0.00001 for j in range(12)] for i in range(16)] # и тут тоже
-        for row in cur.execute(f'SELECT * FROM bases WHERE Case_Id = {CaseId} AND Jaw_id = 1 AND LastFrameNumber != 0 ORDER BY Id'):
+        # for row in cur.execute(f'SELECT * FROM bases WHERE Case_Id = {CaseId} AND Jaw_id = 1 AND LastFrameNumber != 0 ORDER BY Id'):
+        for row in cur.execute(f'SELECT * FROM bases WHERE Case_Id = {CaseId} AND Jaw_id = 1 AND LastFrameNumber != 0 AND (\
+            StartT0_0        BETWEEN -100 AND 100 AND\
+            StartT0_1        BETWEEN -100 AND 100 AND\
+            StartT0_2        BETWEEN -100 AND 100 AND\
+            EndT0_0          BETWEEN -100 AND 100 AND\
+            EndT0_1          BETWEEN -100 AND 100 AND\
+            EndT0_2          BETWEEN -100 AND 100 AND\
+            StartT1_0        BETWEEN -100 AND 100 AND\
+            StartT1_1        BETWEEN -100 AND 100 AND\
+            StartT1_2        BETWEEN -100 AND 100 AND\
+            EndT1_0          BETWEEN -100 AND 100 AND\
+            EndT1_1          BETWEEN -100 AND 100 AND\
+            EndT1_2          BETWEEN -100 AND 100 AND\
+            BCPointT0_0      BETWEEN -100 AND 100 AND\
+            BCPointT0_1      BETWEEN -100 AND 100 AND\
+            BCPointT0_2      BETWEEN -100 AND 100 AND\
+            FAPointT0_0      BETWEEN -100 AND 100 AND\
+            FAPointT0_1      BETWEEN -100 AND 100 AND\
+            FAPointT0_2      BETWEEN -100 AND 100 AND\
+            BCPointT1_0      BETWEEN -100 AND 100 AND\
+            BCPointT1_1      BETWEEN -100 AND 100 AND\
+            BCPointT1_2      BETWEEN -100 AND 100 AND\
+            FAPointT1_0      BETWEEN -100 AND 100 AND\
+            FAPointT1_1      BETWEEN -100 AND 100 AND\
+            FAPointT1_2      BETWEEN -100 AND 100  )\
+            ORDER BY Id' ): # выше это все чтобы убрать всякие дикие цифры из выдачи. inf и прочий космос
             # здесь - один row - это один зуб, надо заполнить челюсть значениями зубов
             # print(row) (42, 3, 1, 47, -25.357, 32.1696, 0.29188, -26.4387, 40.1274, -0.1345 ........ 
             # есть массив dw_tees_nums с номерами зубов. и есть челюсть lower_jaw c нулевыми списками вместо зубов. 
@@ -41,7 +67,7 @@ def set_gen_fr_csv(csv_path):
             # Те зубы которые есть в кейсе, вставятся в челюсть, остальные останутся списками с нулями (None).
             # и это нужно так для конвертации в np
             # номер зуба в row - 4-й по счету, имеет индекс 3. Начиная с 4-го индекса идут значения лендмарков.
-            ind = dw_teeth_nums.index(row[3])
+            ind = dw_teeth_nums.index(row[3]&255) # побит и 255 тут нужен потому что в файле не клиникал id зуба, а какая-то дичь.
             lower_jaw_t0[ind] = row[4:10] + row[16:22] # получается микс списков и туплей, но роде для np это пох
             lower_jaw_t1[ind] = row[10:16] + row[22:28] 
         # print (f"{lower_jaw_t0} len{len(lower_jaw_t0)}")
@@ -60,6 +86,6 @@ def set_gen_fr_csv(csv_path):
 
 if __name__ == "__main__":
     # fpath = 'C:\\Users\\Anton\\Projects\\jaw_encoder\\csv\\input_004.csv'
-    fpath = 'C:\\Users\\Anton\\Projects\\jaw_encoder\\csv\\test2.csv' 
+    fpath = 'C:\\Users\\Anton\\Projects\\jaw_encoder\\csv\\input.csv' 
     t0, t1 = set_gen_fr_csv(fpath)
     print (f"t0 {t0[:3]} shape {t0.shape} len {len(t0)}")

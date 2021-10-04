@@ -24,8 +24,9 @@ dense_dim = 192 # размер dense слоя
 
 SYNTH = 0 # 0 - работаем с интетическими данными, 1 - с настоящими
 inst_ =                 Landmark_gen() # будем егойный метод гонять для постройки графиков. 
-csv_fpath = 'C:/Users/Anton/Projects/jaw_encoder/csv/input_004.csv'
+# csv_fpath = 'C:/Users/Anton/Projects/jaw_encoder/csv/input_004.csv'
 # csv_fpath = 'C:/Users/Anton/Projects/jaw_encoder/csv/test10.csv'
+csv_fpath = 'C:/Users/Anton/Projects/jaw_encoder/csv/input.csv'
 
 if SYNTH:
     # готовим данные для подачи на вход энкодера
@@ -56,19 +57,20 @@ else:
     # dataset_vec         *= 200
     data_len = len(dataset_vec)
     print (f"data lenght {data_len}")
-    [print (f"{i}val {dataset_vec[i][5]} \n {i}spoil {dataset_vec_spoiled[i][5]}") for i in range(len(dataset_vec))]
+    # [print (f"{i}val {dataset_vec[i][5]} \n {i}spoil {dataset_vec_spoiled[i][5]}") for i in range(len(dataset_vec))]
     # print (f"val {dataset_vec[3][5]} \n {dataset_vec_spoiled[3][5]}") 
-    print (f"!")
+    # print (f"!")
 
-dataset_vec =           np.reshape(dataset_vec,    (-1, dense_dim))
+# dataset_vec =           np.reshape(dataset_vec,    (-1, dense_dim))  # а этого не надо решейпить. он уже того.
 dataset_vec_spoiled =   np.reshape(dataset_vec_spoiled,    (-1, dense_dim))
 # print (f"dataset_vec_spoiled shape{dataset_vec_spoiled.shape}") # shape(10, 16, 12)
 
 # подгружаем модель 
-m_pth = (os.path.dirname(sys.argv[0]))+'/models3D/real1/'
+m_pth = (os.path.dirname(sys.argv[0]))+'/models3D/'
 models = os.listdir(m_pth)
 
-ep = 1450       # модели этой эпохи будут загружены
+ep = 5250       # модели этой эпохи будут загружены
+ep = 16700
 
 def model(type_, ep):
     f_path = ''
@@ -99,15 +101,14 @@ decoded_vecs =          np.reshape(decoded_vecs,            (-1, 16, dense_dim//
 # print (f"decoded_vecs[1]{decoded_vecs[1]}")
 # for i in range(n):
 
-k=10 # колво графиков больше 20 не надо - не рисует
-m=3 # штук на графике
-assert n>=m*k
+k=1 # колво графиков больше 20 не надо - не рисует
+m=4 # штук на графике
+sft = 41
+assert n>=m*k+sft
 for i in range(k):
     inst_.draw_3d(  
-                    # dataset_vec         [i*m:(i+1)*m],  # тренировочные
-                    dataset_vec_spoiled [i*m:(i+1)*m],  # входные 
-                    decoded_vecs        [i*m:(i+1)*m],  # предиктные 
-
+                    # dataset_vec         [i*m+sft:(i+1)*m+sft],  # тренировочные
+                    dataset_vec_spoiled [i*m+sft:(i+1)*m+sft],  # входные 
+                    decoded_vecs        [i*m+sft:(i+1)*m+sft],  # предиктные 
                     show = True)
 # inst_.draw_3d((dataset_vec_spoiled[1], dataset_vec_spoiled[1]), show = True)
-
