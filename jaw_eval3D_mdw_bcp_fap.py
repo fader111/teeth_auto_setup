@@ -67,10 +67,10 @@ dataset_vec_spoiled =   np.reshape(dataset_vec_spoiled,    (-1, dense_dim))
 
 # подгружаем модель 
 m_pth = (os.path.dirname(sys.argv[0]))+'/models3D/'
+m_pth = (os.path.dirname(sys.argv[0]))+'/models3D/real6/'
 models = os.listdir(m_pth)
 
-ep = 5250       # модели этой эпохи будут загружены
-ep = 16700
+ep = 16700       # модели этой эпохи будут загружены
 
 def model(type_, ep):
     f_path = ''
@@ -101,7 +101,7 @@ decoded_vecs =          np.reshape(decoded_vecs,            (-1, 16, dense_dim//
 # print (f"decoded_vecs[1]{decoded_vecs[1]}")
 # for i in range(n):
 
-k=1 # колво графиков больше 20 не надо - не рисует
+k=10 # колво графиков больше 20 не надо - не рисует
 m=4 # штук на графике
 sft = 41
 assert n>=m*k+sft
