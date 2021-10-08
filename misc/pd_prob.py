@@ -60,5 +60,15 @@ for i in [1]:#df.index-1:
   # print (f"{df[df['Case_id']==7].iloc[i].tolist()}")
 len(df)
 
+str_ = df.iloc[1]
+str_[str_>30].any()
 
 
+
+df = pd.DataFrame({"name": ['Alfred', 'Batman', 'Catwoman'],
+                   "toy": [50, 100, 200],
+                   "born": [pd.NaT, pd.Timestamp("1940-04-25"),
+                            pd.NaT]})
+df[df.toy>50]=0
+
+df

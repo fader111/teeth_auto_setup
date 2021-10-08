@@ -88,4 +88,12 @@ if __name__ == "__main__":
     # fpath = 'C:\\Users\\Anton\\Projects\\jaw_encoder\\csv\\input_004.csv'
     fpath = 'C:\\Users\\Anton\\Projects\\jaw_encoder\\csv\\input.csv' 
     t0, t1 = set_gen_fr_csv(fpath)
-    print (f"t0 {t0[:3]} shape {t0.shape} len {len(t0)}")
+    # print (f"превышение t0 {t0[t0>100]}")
+    # print (f"ниже порога t0 {t0[t0<-100]}")
+    # print (f"превышение t1 {t0[t0>100]}")
+    # print (f"ниже порога t1 {t0[t0<-100]}")
+    assert len(t0[t0>100]) == 0
+    assert len(t0[t0<-100]) == 0
+    assert len(t1[t1>100]) == 0
+    assert len(t1[t1<-100]) == 0
+    # print (f"t0 {t0[:3]} shape {t0.shape} len {len(t0)}")

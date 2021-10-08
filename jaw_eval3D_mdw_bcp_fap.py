@@ -2,7 +2,7 @@
 import os, sys
 import numpy as np
 # from jaw_gen import *
-# import tensorflow as tf 
+import tensorflow
 # from tensorflow.keras.layers import Input, Dense, Flatten, Reshape, Dropout
 # from tensorflow.keras.layers import Conv2D, MaxPooling2D, UpSampling2D, BatchNormalization
 from tensorflow.keras.models import Model, load_model
@@ -16,7 +16,9 @@ from tensorflow.keras.models import Model, load_model
 # основное отличие - Landmark_gen больше не генерит картинки. только вектора. 
 # и у него теперь есть 3D рисовалка, которая есть независимый метод
 from jaw_gen3d_3lm import Landmark_gen 
-from csv_parser import set_gen_fr_csv
+from csv_parser_pd import set_gen_fr_csv_pd
+
+tensorflow.compat.v1.logging.set_verbosity(tensorflow.compat.v1.logging.ERROR)
  
 
 n=200 # размер батча векторов для предикта
@@ -52,7 +54,7 @@ if SYNTH:
     # print (f"dataset_vec_spoiled shape{dataset_vec_spoiled.shape}") # shape(10, 16, 12)
 else:
     # готовим датасет из файла csv
-    dataset_vec_spoiled, dataset_vec = set_gen_fr_csv(csv_fpath) # возвращает np массивы сначала T0
+    dataset_vec_spoiled, dataset_vec = set_gen_fr_csv_pd(csv_fpath) # возвращает np массивы сначала T0
     # dataset_vec_spoiled *= 200
     # dataset_vec         *= 200
     data_len = len(dataset_vec)
@@ -62,15 +64,17 @@ else:
     # print (f"!")
 
 # dataset_vec =           np.reshape(dataset_vec,    (-1, dense_dim))  # а этого не надо решейпить. он уже того.
+dataset_vec_spoiled = dataset_vec_spoiled[-100:]
 dataset_vec_spoiled =   np.reshape(dataset_vec_spoiled,    (-1, dense_dim))
 # print (f"dataset_vec_spoiled shape{dataset_vec_spoiled.shape}") # shape(10, 16, 12)
 
 # подгружаем модель 
 m_pth = (os.path.dirname(sys.argv[0]))+'/models3D/'
-m_pth = (os.path.dirname(sys.argv[0]))+'/models3D/real6/'
+# m_pth = (os.path.dirname(sys.argv[0]))+'/models3D/real6/'
 models = os.listdir(m_pth)
 
-ep = 16700       # модели этой эпохи будут загружены
+# модели этой эпохи будут загружены
+ep = 16250       
 
 def model(type_, ep):
     f_path = ''
